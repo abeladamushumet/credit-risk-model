@@ -7,17 +7,13 @@ from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.cluster import KMeans
 
-#  1. Load Data 
-def load_data():
-    base_dir = os.path.dirname(os.path.dirname(__file__))  # Go up one level from 'scripts'
-    file_path = os.path.join(base_dir, 'data', 'raw', 'data.csv')
-    df = pd.read_csv(file_path)
-    return df
-
+# ========== 1. Load Data ==========
+def load_data(path: str) -> pd.DataFrame:
+    df = pd.read_csv(path)
     df['TransactionStartTime'] = pd.to_datetime(df['TransactionStartTime'])
     return df
 
-#  2. RFM Feature Generation 
+# ========== 2. RFM Feature Generation ==========
 def create_rfm_features(df: pd.DataFrame, snapshot_date: pd.Timestamp = None) -> pd.DataFrame:
     if snapshot_date is None:
         snapshot_date = df['TransactionStartTime'].max() + pd.Timedelta(days=1)
@@ -34,7 +30,7 @@ def create_rfm_features(df: pd.DataFrame, snapshot_date: pd.Timestamp = None) ->
     
     return rfm
 
-# 3. KMeans Clustering
+# ========== 3. KMeans Clustering ==========
 def scale_features(df: pd.DataFrame, features: list) -> np.ndarray:
     scaler = StandardScaler()
     scaled = scaler.fit_transform(df[features])
@@ -68,7 +64,7 @@ def add_proxy_target(df: pd.DataFrame, rfm_df: pd.DataFrame, high_risk_cluster: 
     df['is_high_risk'] = df['is_high_risk'].fillna(0).astype(int)
     return df
 
-# 4. Feature Engineering 
+# ========== 4. Feature Engineering ==========
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df['Transaction_Hour'] = df['TransactionStartTime'].dt.hour
     df['Transaction_Day'] = df['TransactionStartTime'].dt.day
@@ -85,7 +81,7 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df = pd.merge(df, agg_df, on='CustomerId', how='left')
     return df
 
-#  5. Preprocessing Pipeline 
+# ========== 5. Preprocessing Pipeline ==========
 def create_pipeline(df: pd.DataFrame):
     num_cols = ['Total_Amount', 'Avg_Amount', 'Std_Amount', 'Num_Transactions', 'Transaction_Hour']
     cat_cols = ['ProductCategory', 'ChannelId', 'PricingStrategy']
@@ -107,12 +103,12 @@ def create_pipeline(df: pd.DataFrame):
 
     return full_pipeline
 
-#  6. Save Processed Data 
+# ========== 6. Save Processed Data ==========
 def save_processed_data(df: pd.DataFrame, path='data/processed/processed_data.csv'):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     df.to_csv(path, index=False)
 
-#  7. Main Execution 
+# ========== 7. Main Execution ==========
 if __name__ == "__main__":
     df = load_data("data/raw/data.csv")
 
@@ -126,3 +122,6 @@ if __name__ == "__main__":
     pipeline = create_pipeline(df)
     X = pipeline.fit_transform(df)
     y = df['is_high_risk']
+
+    save_processed_data(df)
+    print("Processed data saved .")
