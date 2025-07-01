@@ -197,4 +197,6 @@ models/
 *.pkl
 echo "mlruns/" >> .gitignore
 echo "models/" >> .gitignore
+mlruns/
+models/
 
