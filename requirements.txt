@@ -9,3 +9,8 @@ seaborn
 # ML + Pipeline
 scikit-learn
 
+fastapi
+uvicorn
+pandas
+scikit-learn
+joblib
